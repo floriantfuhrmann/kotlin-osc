@@ -1,9 +1,14 @@
 package eu.florian_fuhrmann.kotlin_osc
 
-class OscClient {
+import eu.florian_fuhrmann.kotlin_osc.packet.OscPacket
+import java.io.ByteArrayOutputStream
+import java.net.Socket
 
-    fun foo() {
+class OscClient(val socket: Socket) {
 
+    @OptIn(ExperimentalStdlibApi::class)
+    fun sendPacket(oscPacket: OscPacket) {
+        oscPacket.write(socket.outputStream)
     }
 
 }
