@@ -1,3 +1,4 @@
+import eu.florian_fuhrmann.kotlin_osc.OscVersion
 import eu.florian_fuhrmann.kotlin_osc.atomics.asOscAtomic
 import eu.florian_fuhrmann.kotlin_osc.packet.OscPacket
 import eu.florian_fuhrmann.kotlin_osc.packet.contents.message.OscMessage
@@ -9,6 +10,7 @@ class SimpleExamples {
     private val Char.b: Byte
         get() = this.code.toByte()
 
+    // for spec 1.0
     val EXAMPLE_MESSAGE_1_EXPECTED = byteArrayOf(
         0x00, 0x00, 0x00, 0x20,
         '/'.b, 'o'.b, 's'.b, 'c'.b,
@@ -28,7 +30,7 @@ class SimpleExamples {
         // wrapped in a packet
         val packet = OscPacket(message)
         // get packet data
-        val packetData = writeToByteArray { packet.write(it) }
+        val packetData = writeToByteArray { packet.write(it, oscVersion = OscVersion.Specification1_0) }
         // check if the packet data matches the expected data
         assertEquals("\n${EXAMPLE_MESSAGE_1_EXPECTED.toHexDumpString()}", "\n${packetData.toHexDumpString()}")
     }
