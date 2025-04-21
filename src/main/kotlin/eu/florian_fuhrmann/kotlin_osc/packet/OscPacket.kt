@@ -2,14 +2,16 @@ package eu.florian_fuhrmann.kotlin_osc.packet
 
 import eu.florian_fuhrmann.kotlin_osc.OscVersion
 import eu.florian_fuhrmann.kotlin_osc.atomics.asOscAtomic
-import eu.florian_fuhrmann.kotlin_osc.packet.contents.OscPacketContents
+import eu.florian_fuhrmann.kotlin_osc.packet.contents.OscObject
 import eu.florian_fuhrmann.kotlin_osc.utils.SlipOutputStream
 import java.io.OutputStream
 
 /**
- * An Osc packet containing either a [eu.florian_fuhrmann.kotlin_osc.packet.contents.message.OscMessage] or a [OscBundle]
+ * An Osc packet containing either a
+ * [eu.florian_fuhrmann.kotlin_osc.packet.contents.message.OscMessage] or
+ * a [eu.florian_fuhrmann.kotlin_osc.packet.contents.bundle.OscBundle]
  */
-class OscPacket(val contents: OscPacketContents) {
+class OscPacket(val contents: OscObject) {
 
     /**
      * Write the contents of this packet to the given output stream. Prepends

@@ -2,7 +2,7 @@ package eu.florian_fuhrmann.kotlin_osc.packet.contents.message
 
 import eu.florian_fuhrmann.kotlin_osc.atomics.OscAtomics
 import eu.florian_fuhrmann.kotlin_osc.atomics.asOscAtomic
-import eu.florian_fuhrmann.kotlin_osc.packet.contents.OscPacketContents
+import eu.florian_fuhrmann.kotlin_osc.packet.contents.OscObject
 import java.io.OutputStream
 
 /**
@@ -17,7 +17,7 @@ import java.io.OutputStream
 class OscMessage(
     val addressPattern: String, // String could be replaced with an OSC Address Pattern type for validation
     val arguments: List<OscAtomics.AbstractOscAtomic<*>>
-) : OscPacketContents {
+) : OscObject {
 
     /**
      * Returns the type tag string representing argument types in this message.
