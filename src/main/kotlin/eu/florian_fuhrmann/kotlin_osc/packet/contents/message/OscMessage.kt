@@ -19,12 +19,17 @@ class OscMessage(
     val arguments: List<OscAtomics.AbstractOscAtomic<*>>
 ) : OscObject {
 
+    constructor(
+        addressPattern: String,
+        vararg arguments: OscAtomics.AbstractOscAtomic<*>
+    ) : this(addressPattern, arguments.toList())
+
     /**
      * Returns the type tag string representing argument types in this message.
      * The string starts with a comma followed by type tags for each argument.
      * Examples:
-     *  - ",iff" for one int32 argument followed by two float32 arguments
-     *  - "," for no arguments
+     * - ",iff" for one int32 argument followed by two float32 arguments
+     * - "," for no arguments
      */
     val typeTagString: String
         get() {

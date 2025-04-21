@@ -17,6 +17,16 @@ class OscBundle(
     val elements: List<OscBundleElement>
 ) : OscObject {
 
+    constructor(
+        timeTag: OscAtomics.OscTimeTag = OscAtomics.OscTimeTag.immediately(),
+        vararg elements: OscBundleElement
+    ) : this(timeTag, elements.toList())
+
+    constructor(
+        timeTag: OscAtomics.OscTimeTag = OscAtomics.OscTimeTag.immediately(),
+        vararg elements: OscObject
+    ) : this(timeTag, elements.toList().map { OscBundleElement(it) })
+
     /**
      * The size of this osc bundle in bytes.
      *
