@@ -3,7 +3,10 @@ package eu.florian_fuhrmann.kotlin_osc.packet.contents.message
 import eu.florian_fuhrmann.kotlin_osc.atomics.OscAtomics
 import eu.florian_fuhrmann.kotlin_osc.atomics.asOscAtomic
 import eu.florian_fuhrmann.kotlin_osc.packet.contents.OscObject
+import eu.florian_fuhrmann.kotlin_osc.packet.contents.message.OscMessage.Builder
 import java.io.OutputStream
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 /**
  * An OSC message consists of an address pattern and a list of zero or more
@@ -58,4 +61,22 @@ class OscMessage(
         arguments.forEach { it.write(outputStream) }
     }
 
+    class Builder(private var addressPattern: String = "") {
+        private val arguments = mutableListOf<OscAtomics.AbstractOscAtomic<*>>()
+        fun addressPattern(addressPattern: String) {
+            this.addressPattern = addressPattern
+        }
+
+        fun arg(argument: OscAtomics.AbstractOscAtomic<*>) = arguments.add(argument)
+        fun arg(argument: Int) = arguments.add(argument.asOscAtomic)
+        fun arg(argument: Float) = arguments.add(argument.asOscAtomic)
+        fun arg(argument: String) = arguments.add(argument.asOscAtomic)
+
+        @OptIn(ExperimentalTime::class)
+        fun arg(argument: Instant) = arguments.add(argument.asOscAtomic)
+        fun toOscMessage() = OscMessage(addressPattern, arguments)
+    }
 }
+
+inline fun buildOscMessage(addressPattern: String, builder: Builder.() -> Unit) =
+    Builder(addressPattern).apply(builder).toOscMessage()

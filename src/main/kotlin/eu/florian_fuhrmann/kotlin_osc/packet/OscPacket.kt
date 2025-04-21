@@ -1,5 +1,6 @@
 package eu.florian_fuhrmann.kotlin_osc.packet
 
+import eu.florian_fuhrmann.kotlin_osc.OscClient
 import eu.florian_fuhrmann.kotlin_osc.OscVersion
 import eu.florian_fuhrmann.kotlin_osc.atomics.asOscAtomic
 import eu.florian_fuhrmann.kotlin_osc.packet.contents.OscObject
@@ -40,5 +41,7 @@ class OscPacket(val contents: OscObject) {
             }
         }
     }
+
+    fun sendTo(oscClient: OscClient) = oscClient.sendPacket(this)
 
 }
