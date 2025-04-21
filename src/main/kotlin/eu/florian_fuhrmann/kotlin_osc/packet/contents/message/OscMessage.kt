@@ -79,11 +79,9 @@ class OscMessage(
         fun arg(argument: Instant) = arguments.add(argument.asOscAtomic)
 
         /** Builds an OscMessage from the current state of this builder. */
-        fun toOscMessage() {
-            addressPattern.let { addressPattern ->
-                checkNotNull(addressPattern) { "Address pattern must be set before building an OscMessage" }
-                OscMessage(addressPattern, arguments)
-            }
+        fun toOscMessage() = addressPattern.let { addressPattern ->
+            checkNotNull(addressPattern) { "Address pattern must be set before building an OscMessage" }
+            OscMessage(addressPattern, arguments)
         }
     }
 }
