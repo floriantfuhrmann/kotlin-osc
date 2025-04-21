@@ -61,8 +61,11 @@ class OscMessage(
         arguments.forEach { it.write(outputStream) }
     }
 
-    class Builder(private var addressPattern: String = "") {
+    class Builder() {
+        private var addressPattern: String? = null
         private val arguments = mutableListOf<OscAtomics.AbstractOscAtomic<*>>()
+
+        /** Sets the address pattern of the message. */
         fun addressPattern(addressPattern: String) {
             this.addressPattern = addressPattern
         }
@@ -74,9 +77,16 @@ class OscMessage(
 
         @OptIn(ExperimentalTime::class)
         fun arg(argument: Instant) = arguments.add(argument.asOscAtomic)
-        fun toOscMessage() = OscMessage(addressPattern, arguments)
+
+        /** Builds an OscMessage from the current state of this builder. */
+        fun toOscMessage() {
+            addressPattern.let { addressPattern ->
+                checkNotNull(addressPattern) { "Address pattern must be set before building an OscMessage" }
+                OscMessage(addressPattern, arguments)
+            }
+        }
     }
 }
 
-inline fun buildOscMessage(addressPattern: String, builder: Builder.() -> Unit) =
-    Builder(addressPattern).apply(builder).toOscMessage()
+inline fun buildOscMessage(addressPattern: String = "", builder: Builder.() -> Unit = {}) =
+    Builder().apply { addressPattern(addressPattern) }.apply(builder).toOscMessage()

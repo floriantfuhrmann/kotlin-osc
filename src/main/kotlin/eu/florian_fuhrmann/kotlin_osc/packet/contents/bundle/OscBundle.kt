@@ -48,8 +48,24 @@ class OscBundle(
         }
     }
 
+    class Builder {
+        private var timeTag: OscAtomics.OscTimeTag = OscAtomics.OscTimeTag.immediately()
+        private val elements = mutableListOf<OscBundleElement>()
+        fun timeTag(timeTag: OscAtomics.OscTimeTag) {
+            this.timeTag = timeTag
+        }
+
+        fun element(element: OscBundleElement) = elements.add(element)
+        fun element(element: OscObject) = elements.add(OscBundleElement(element))
+        fun toOscBundle() = OscBundle(timeTag, elements)
+    }
+
     companion object {
         val BUNDLE_HEADER = "#bundle".asOscAtomic
     }
 
 }
+
+inline fun buildOscBundle(
+    timeTag: OscAtomics.OscTimeTag = OscAtomics.OscTimeTag.immediately(), builder: OscBundle.Builder.() -> Unit = {}
+) = OscBundle.Builder().apply { timeTag(timeTag) }.apply(builder).toOscBundle()
