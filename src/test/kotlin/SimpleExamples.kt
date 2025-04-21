@@ -2,6 +2,7 @@ import eu.florian_fuhrmann.kotlin_osc.OscVersion
 import eu.florian_fuhrmann.kotlin_osc.atomics.asOscAtomic
 import eu.florian_fuhrmann.kotlin_osc.packet.OscPacket
 import eu.florian_fuhrmann.kotlin_osc.packet.contents.message.OscMessage
+import eu.florian_fuhrmann.kotlin_osc.packet.contents.message.buildOscMessage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -29,6 +30,19 @@ class SimpleExamples {
         val message = OscMessage("/oscillator/4/frequency", listOf(440.0f.asOscAtomic))
         // wrapped in a packet
         val packet = OscPacket(message)
+        // get packet data
+        val packetData = writeToByteArray { packet.write(it, oscVersion = OscVersion.Specification1_0) }
+        // check if the packet data matches the expected data
+        assertEquals("\n${EXAMPLE_MESSAGE_1_EXPECTED.toHexDumpString()}", "\n${packetData.toHexDumpString()}")
+    }
+
+    @Test
+    fun example1Builder() {
+        // build example message 1
+        val packet = buildOscMessage {
+            addressPattern("/oscillator/4/frequency")
+            arg(440.0f)
+        }.toOscPacket()
         // get packet data
         val packetData = writeToByteArray { packet.write(it, oscVersion = OscVersion.Specification1_0) }
         // check if the packet data matches the expected data
