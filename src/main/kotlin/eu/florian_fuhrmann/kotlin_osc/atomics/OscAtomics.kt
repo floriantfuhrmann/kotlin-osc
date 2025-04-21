@@ -3,6 +3,8 @@ package eu.florian_fuhrmann.kotlin_osc.atomics
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 class OscAtomics {
 
@@ -21,6 +23,26 @@ class OscAtomics {
         override val size = 4
         override fun write(outputStream: OutputStream) {
             outputStream.write(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(value).array())
+        }
+    }
+
+    @OptIn(ExperimentalTime::class)
+    class OscTimeTag(value: Instant): AbstractOscAtomic<Instant>(value, 't') {
+        override val size = 8
+        private fun writeLowerBytesOfLong(long: Long, outputStream: OutputStream) {
+            outputStream.write((long shr 24).toByte().toInt())
+            outputStream.write((long shr 16).toByte().toInt())
+            outputStream.write((long shr 8).toByte().toInt())
+            outputStream.write((long shr 0).toByte().toInt())
+        }
+        override fun write(outputStream: OutputStream) {
+            // write time in NTP format (see https://en.wikipedia.org/wiki/Network_Time_Protocol#Timestamps)
+            // write the number of seconds since 1900
+            val secondsSince1900 = value.epochSeconds + 2208988800L
+            writeLowerBytesOfLong(secondsSince1900, outputStream)
+            // write the fractional part
+            val fraction = (value.nanosecondsOfSecond * 0x100000000L) / 1_000_000_000L
+            writeLowerBytesOfLong(fraction, outputStream)
         }
     }
 
