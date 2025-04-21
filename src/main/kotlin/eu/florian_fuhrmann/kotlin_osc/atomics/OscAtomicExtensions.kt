@@ -14,4 +14,4 @@ val String.asOscAtomic: OscAtomics.OscString
 
 @OptIn(ExperimentalTime::class)
 val Instant.asOscAtomic: OscAtomics.OscTimeTag
-    get() = OscAtomics.OscTimeTag(this)
+    get() = OscAtomics.OscTimeTag.at(this)

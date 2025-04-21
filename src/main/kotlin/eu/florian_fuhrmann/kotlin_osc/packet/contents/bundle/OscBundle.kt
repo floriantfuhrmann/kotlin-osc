@@ -13,7 +13,7 @@ import java.io.OutputStream
  * @param elements the elements of this bundle
  */
 class OscBundle(
-    val timeTag: OscAtomics.OscTimeTag,
+    val timeTag: OscAtomics.OscTimeTag = OscAtomics.OscTimeTag.immediately(),
     val elements: List<OscBundleElement>
 ) : OscObject {
 

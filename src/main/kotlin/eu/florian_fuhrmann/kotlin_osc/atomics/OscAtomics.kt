@@ -27,22 +27,39 @@ class OscAtomics {
     }
 
     @OptIn(ExperimentalTime::class)
-    class OscTimeTag(value: Instant): AbstractOscAtomic<Instant>(value, 't') {
+    sealed class OscTimeTag(value: Instant?): AbstractOscAtomic<Instant?>(value, 't') {
         override val size = 8
-        private fun writeLowerBytesOfLong(long: Long, outputStream: OutputStream) {
-            outputStream.write((long shr 24).toByte().toInt())
-            outputStream.write((long shr 16).toByte().toInt())
-            outputStream.write((long shr 8).toByte().toInt())
-            outputStream.write((long shr 0).toByte().toInt())
+
+        class Immediate : OscTimeTag(null) {
+            override fun write(outputStream: OutputStream) {
+                // write 7 times 0x00 and then 0x01
+                repeat(7) { outputStream.write(0) }
+                outputStream.write(1)
+            }
         }
-        override fun write(outputStream: OutputStream) {
-            // write time in NTP format (see https://en.wikipedia.org/wiki/Network_Time_Protocol#Timestamps)
-            // write the number of seconds since 1900
-            val secondsSince1900 = value.epochSeconds + 2208988800L
-            writeLowerBytesOfLong(secondsSince1900, outputStream)
-            // write the fractional part
-            val fraction = (value.nanosecondsOfSecond * 0x100000000L) / 1_000_000_000L
-            writeLowerBytesOfLong(fraction, outputStream)
+
+        class Specified(timeValue: Instant) : OscTimeTag(timeValue) {
+            private fun writeLowerBytesOfLong(long: Long, outputStream: OutputStream) {
+                outputStream.write((long shr 24).toByte().toInt())
+                outputStream.write((long shr 16).toByte().toInt())
+                outputStream.write((long shr 8).toByte().toInt())
+                outputStream.write((long shr 0).toByte().toInt())
+            }
+            override fun write(outputStream: OutputStream) {
+                check(value != null) { "Cannot write a specified time tag with a null value" }
+                // write time in NTP format (see https://en.wikipedia.org/wiki/Network_Time_Protocol#Timestamps)
+                // write the number of seconds since 1900
+                val secondsSince1900 = value.epochSeconds + 2208988800L
+                writeLowerBytesOfLong(secondsSince1900, outputStream)
+                // write the fractional part
+                val fraction = (value.nanosecondsOfSecond * 0x100000000L) / 1_000_000_000L
+                writeLowerBytesOfLong(fraction, outputStream)
+            }
+        }
+
+        companion object {
+            fun immediately(): OscTimeTag = Immediate()
+            fun at(instant: Instant): OscTimeTag = Specified(instant)
         }
     }
 

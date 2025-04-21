@@ -1,6 +1,8 @@
 import eu.florian_fuhrmann.kotlin_osc.atomics.OscAtomics
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.microseconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -19,11 +21,13 @@ class OscTimeTagTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["2025-01-01T00:00:12.3456789Z", "2025-01-01T00:00:12.00Z", "2025-01-01T00:00:00.00Z", "2026-09-27T19:02:34.567Z", "2028-02-29T14:32:10.123Z"])
-    fun testTimeTag(input: String) {
+    fun testSpecifiedTimeTags(input: String) {
         // get a test input instant
         val inputInstant = Instant.parse(input)
         // create time tag from the input instant
-        val oscTimeTag = OscAtomics.OscTimeTag(inputInstant)
+        val oscTimeTag = OscAtomics.OscTimeTag.at(inputInstant)
+        // check whether the size is correct
+        assertEquals(oscTimeTag.size, 8)
 
         // write time tag to the byte array
         val bytes = writeToByteArray { oscTimeTag.write(it) }
@@ -42,6 +46,26 @@ class OscTimeTagTest {
         // check whether the input and actual are close enough
         assert(inputInstant.minus(actual).absoluteValue <= 1.microseconds) {
             "expected: $inputInstant, actual: $actual"
+        }
+    }
+
+    @Test
+    fun testImmediateTimeTag() {
+        // create immediate time tag
+        val oscTimeTag = OscAtomics.OscTimeTag.immediately()
+        // check whether the size is correct
+        assertEquals(oscTimeTag.size, 8)
+        // check whether the instant is null
+        assert(OscAtomics.OscTimeTag.immediately().value == null) {
+            "expected: null, actual: ${OscAtomics.OscTimeTag.immediately().value}"
+        }
+        // write time tag to the byte array
+        val bytes = writeToByteArray { oscTimeTag.write(it) }
+        // check whether the bytes are all zero except for the last byte
+        val expectedBytes = ByteArray(8) { 0x00 }
+        expectedBytes[7] = 0x01
+        assert(bytes.contentEquals(expectedBytes)) {
+            "expected: ${expectedBytes.toHexDumpString()}, actual: ${bytes.toHexDumpString()}"
         }
     }
 
