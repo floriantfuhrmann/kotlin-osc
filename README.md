@@ -48,7 +48,7 @@ buildOscMessage {
 ## OSC Atomics
 All non-optional Atomic Data Types specified by OSC 1.0 and 1.1 are currently supported.
 
-Note: When using `OscMessage.Builder`, you don't need to explicitly create instances of most of these types.
+Note: When using [`buildOscMessage {}`](#creating-an-oscmessage-object-using-buildoscmessage--recommended), you don't need to explicitly create instances of most of these types.
 
 ### Integer
 ```kotlin
