@@ -6,6 +6,8 @@ import eu.florian_fuhrmann.kotlin_osc.packet.contents.OscObject
 import eu.florian_fuhrmann.kotlin_osc.packet.contents.message.OscMessage
 import eu.florian_fuhrmann.kotlin_osc.packet.contents.message.buildOscMessage
 import java.io.OutputStream
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 /**
  * An OSC bundle consists of a time-tag, followed by a list of zero or more
@@ -58,6 +60,9 @@ class OscBundle(
         fun timeTag(timeTag: OscAtomics.OscTimeTag) {
             this.timeTag = timeTag
         }
+
+        @OptIn(ExperimentalTime::class)
+        fun timeTag(instant: Instant) = timeTag(instant.asOscAtomic)
 
         /** Adds the give [OscBundleElement] to this bundle. */
         fun element(element: OscBundleElement) = elements.add(element)
