@@ -132,7 +132,7 @@ val message = OscMessage("/foo/bar", listOf(0.2f.asOscAtomic, 42.asOscAtomic))
 // or
 val message = OscMessage("/foo/bar", 0.2f.asOscAtomic, 42.asOscAtomic)
 ```
-However, it is strongly recommended to use `buildOscMessage {}` instead.
+However, it is strongly recommended to use `buildOscMessage { /* ... */ }` instead.
 
 ### Creating an OscMessage Object Using `buildOscMessage {}` (Recommended)
 The same message can be created using the builder pattern:
@@ -163,8 +163,53 @@ val message = buildOscMessage("/foo/bar") {
 }
 ```
 
-## Osc Bundle
-TODO
+## OSC Bundle
+This is the Structure of an `OscBundle`:
+```kotlin
+class OscBundle(
+    val timeTag: OscAtomics.OscTimeTag,     // time-tag (meaning not specified by OSC 1.1 - ignored by most servers)
+    val elements: List<OscBundleElement>    // zero or more bundle elements
+) : OscObject
+```
+
+### Creating an OscBundle Object Manually (Not Recommended)
+Similar to `OscMessage` it is possible to manually put together an `OscBundle` like this:
+```kotlin
+val msg1 = OscMessage("/foo/bar", listOf(42.asOscAtomic))
+val bundle = OscBundle(
+    timeTag = Instant.fromEpochMilliseconds(123456789L).asOscAtomic,
+    elements = listOf(OscBundleElement(msg1))
+)
+```
+However, it is strongly recommended to use `buildOscBundle { /* ... */ }` instead.
+
+### Creating an OscBundle Object Using `buildOscBundle {}` (Recommended)
+The same bundle can be created more elegantly using the builder pattern:
+```kotlin
+buildOscBundle {
+    timeTag(Instant.fromEpochMilliseconds(987654321L)) // sets this bundles time tag (optional, immediately by default)
+    message("/foo") {
+        arg(42)
+    }
+}
+```
+
+#### Complex Bundle Structures
+The builder pattern makes it easy to create complex bundles with nested structures:
+```kotlin
+buildOscBundle {
+    timeTag(Instant.fromEpochMilliseconds(123456789L))
+    bundle { // 1st nesting
+        message("/foo") { arg(42) }
+        message("/bar") { arg(0.3f) }
+        bundle { // 2nd nesting
+            message("/baz") { arg("hello") }    // these messages
+            message("/baz") { arg(42) }         // are encapsulated
+            message("/baz") { arg(0.3f) }       // in 3 Bundles
+        }
+    }
+}
+```
 
 ## Osc Packet
 TODO
