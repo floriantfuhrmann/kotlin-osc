@@ -100,7 +100,31 @@ class OscAtomics {
     }
 
     class OscBlob(value: ByteArray) : AbstractOscAtomic<ByteArray>(value, 'b') {
+        /**
+         * The size of an osc blob is the size of the blob data plus 4 for the
+         * int32 size header plus the number of padding bytes needed to make the
+         * size a multiple of 4.
+         *
+         * The number of padding bytes is given by 4 - (size % 4) where size is the
+         * length of the blob data.
+         */
         override val size = Int32.SIZE + value.size.let { it + ((4 - it % 4) and 0b11) }
+
+        /**
+         * Writes the blob data to the given output stream following the OSC format
+         * specification:
+         * 1. First writes an int32 indicating the size of blob data
+         * 2. Then writes the actual blob data bytes
+         * 3. Finally, writes 0-3 null bytes as padding to ensure the total length
+         *    is a multiple of 4 bytes
+         *
+         * For example, a blob of size 6 would be written as:
+         * - Size value (4 bytes): 0x00 0x00 0x00 0x06
+         * - Blob data (6 bytes): 0xXX 0xXX 0xXX 0xXX 0xXX 0xXX
+         * - Padding (2 bytes): 0x00 0x00
+         *
+         * @param outputStream The output stream to write the blob data to
+         */
         override fun write(outputStream: OutputStream) {
             // write the size count preamble
             value.size.asOscAtomic.write(outputStream)
@@ -111,5 +135,24 @@ class OscAtomics {
             outputStream.write(ByteArray(paddingBytes))
         }
     }
+
+    sealed class OscBool(typeTag: Char) : AbstractOscAtomic<Unit>(Unit, typeTag) {
+        override val size = SIZE
+
+        /**
+         * OscTrue and OscFalse have no data, so this method writes nothing to the
+         * given output stream.
+         */
+        override fun write(outputStream: OutputStream) {
+            // true has no data, so there is nothing to write
+        }
+
+        companion object {
+            const val SIZE = 0
+        }
+    }
+
+    class OscTrue : OscBool('T')
+    class OscFalse : OscBool('F')
 
 }

@@ -18,3 +18,6 @@ val Instant.asOscAtomic: OscAtomics.OscTimeTag
 
 val ByteArray.asOscAtomic: OscAtomics.OscBlob
     get() = OscAtomics.OscBlob(this)
+
+val Boolean.asOscAtomic: OscAtomics.OscBool
+    get() = if (this) OscAtomics.OscTrue() else OscAtomics.OscFalse()

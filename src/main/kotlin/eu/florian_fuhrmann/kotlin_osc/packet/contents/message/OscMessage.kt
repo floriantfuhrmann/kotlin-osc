@@ -74,9 +74,10 @@ class OscMessage(
         fun arg(argument: Int) = arguments.add(argument.asOscAtomic)
         fun arg(argument: Float) = arguments.add(argument.asOscAtomic)
         fun arg(argument: String) = arguments.add(argument.asOscAtomic)
-
         @OptIn(ExperimentalTime::class)
         fun arg(argument: Instant) = arguments.add(argument.asOscAtomic)
+        fun arg(argument: ByteArray) = arguments.add(argument.asOscAtomic)
+        fun arg(argument: Boolean) = arguments.add(argument.asOscAtomic)
 
         /** Builds an OscMessage from the current state of this builder. */
         fun toOscMessage() = addressPattern.let { addressPattern ->
