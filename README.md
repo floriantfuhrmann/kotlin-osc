@@ -17,7 +17,7 @@ parent project.
 ## Future Planes
 
 - UDP support
-- independent from JVM
+- Independence from JVM
 
 ## Alternatives
 
@@ -148,7 +148,7 @@ val message = buildOscMessage("/test/foo") { arg(0.2f); arg(42) }
 #### Supported Argument Types
 The following types can be passed to `arg(...)`:
 ```kotlin
-val myAbstractAtomic: OscAtomics.AbstractOscAtomic<*> = getSomeOscAtomic()
+val myAbstractAtomic: OscAtomics.AbstractOscAtomic<*> = /* ... */
 val message = buildOscMessage("/foo/bar") {
     arg(myAbstractAtomic)                           // AbstractOscAtomic
     arg(42)                                         // Int (-> int32)
@@ -186,7 +186,7 @@ However, it is strongly recommended to use `buildOscBundle { /* ... */ }` instea
 ### Creating an OscBundle Object Using `buildOscBundle {}` (Recommended)
 The same bundle can be created more elegantly using the builder pattern:
 ```kotlin
-buildOscBundle {
+val bundle = buildOscBundle {
     timeTag(Instant.fromEpochMilliseconds(987654321L)) // sets this bundles time tag (optional, immediately by default)
     message("/foo") {
         arg(42)
@@ -197,7 +197,7 @@ buildOscBundle {
 #### Complex Bundle Structures
 The builder pattern makes it easy to create complex bundles with nested structures:
 ```kotlin
-buildOscBundle {
+val bundle = buildOscBundle {
     timeTag(Instant.fromEpochMilliseconds(123456789L))
     bundle { // 1st nesting
         message("/foo") { arg(42) }
@@ -211,8 +211,98 @@ buildOscBundle {
 }
 ```
 
-## Osc Packet
-TODO
+## OSC Packet
+An `OscPacket` is the top-level container encapsulating either an `OscMessage` or `OscBundle`:
+```kotlin
+class OscPacket(val contents: OscObject) // OscObject is either an OscMessage or an OscBundle
+```
 
-## Osc Client
-TODO
+### Creating an OscPacket Object
+You can create an `OscObject` in two ways:
+```kotlin
+// Method 1: Direct constructor
+val myOscObject: OscObject = /* ... */
+val packet = OscPacket(myOscObject)
+
+// Method 2: OscObject#toOscPacket() function
+val packet = myOscObject.toOscPacket()
+```
+
+### Writing an OscPacket into an OutputStream
+Use `OscPacket#write()` to write the packet to any `OutputStream`.
+```kotlin
+val myOutputStream = /* ... */
+packet.write(
+    outputStream = myOutputStream,
+    oscVersion = OscVersion.Specification1_1 // Optional, default: Specification1_1
+)
+```
+The `oscVersion` parameter determines the framing mechanism:
+* `OscVersion.Specification1_0`: Uses size-count-preamble
+* `OscVersion.Specification1_1`: double-ended SLIP framing (default)
+
+## OSC Client
+The `OscClient` provides a convenient way to send OSC packets over TCP:
+```kotlin
+class OscClient(
+    val socket: Socket,
+    val oscVersion: OscVersion = OscVersion.Specification1_1
+)
+```
+
+### Creating an OscClient
+```kotlin
+// Create a client with the default OSC 1.1 specification
+val client = OscClient(Socket("127.0.0.1", 5000))
+
+// Or specify a different OSC version
+val clientWithVersion = OscClient(
+    socket = Socket("127.0.0.1", 5000),
+    oscVersion = OscVersion.Specification1_0
+)
+```
+
+### Sending OSC Packets
+The client offers multiple ways to send OSC Packets/Messages/Bundles:
+```kotlin
+// Method 1: Send a pre-built OSC packet
+val packet = buildOscMessage("/foo/bar") { arg(42) }.toOscPacket()
+client.sendPacket(packet)
+
+// Method 2: Use OscPacket#sendTo function
+packet.sendTo(client)
+
+// Method 3: Send messages/bundles/ general objects directly (the client handles packet creation)
+val message = buildOscMessage("/foo/bar") { arg("hello") }
+client.sendMessage(message)
+// or
+client.sendBundle(bundle)
+// or
+client.sendObject(oscObject)
+```
+
+### Client Lifecycle Management
+Remember to close the socket when done with the client:
+```kotlin
+try {
+    val client = OscClient(Socket("127.0.0.1", 5000))
+    client.sendMessage(buildOscMessage("/foo") { arg("hello") })
+    // Additional operations...
+} finally {
+    client.socket.close()
+}
+```
+### Example: Complete Message Sending Flow
+```kotlin
+// Create and configure the client
+val client = OscClient(Socket("127.0.0.1", 5000))
+
+// Build and send an OSC message in a single operation
+buildOscMessage {
+    addressPattern("/foo/bar")
+    arg(42.0f)
+}.toOscPacket().sendTo(client)
+
+// Close the socket when done
+client.socket.close()
+```
