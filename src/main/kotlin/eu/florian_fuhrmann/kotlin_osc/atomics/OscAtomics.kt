@@ -136,12 +136,12 @@ class OscAtomics {
         }
     }
 
-    sealed class OscBool(typeTag: Char) : AbstractOscAtomic<Unit>(Unit, typeTag) {
+    sealed class AbstractNoDataOscAtomic<T>(value: T, typeTag: Char) : AbstractOscAtomic<T>(value, typeTag) {
         override val size = SIZE
 
         /**
-         * OscTrue and OscFalse have no data, so this method writes nothing to the
-         * given output stream.
+         * This osc atomic has no data, so this method writes nothing to the given
+         * output stream.
          */
         override fun write(outputStream: OutputStream) {
             // true has no data, so there is nothing to write
@@ -152,7 +152,15 @@ class OscAtomics {
         }
     }
 
-    class OscTrue : OscBool('T')
-    class OscFalse : OscBool('F')
+    sealed class OscBool(value: Boolean, typeTag: Char) : AbstractNoDataOscAtomic<Boolean>(value, typeTag)
+    private class OscTrue : OscBool(true, 'T')
+    private class OscFalse : OscBool(false, 'F')
+    class OscNull : AbstractNoDataOscAtomic<Unit>(Unit, 'N')
+
+    companion object {
+        val True: OscBool = OscTrue()
+        val False: OscBool = OscFalse()
+        val Null = OscNull()
+    }
 
 }
