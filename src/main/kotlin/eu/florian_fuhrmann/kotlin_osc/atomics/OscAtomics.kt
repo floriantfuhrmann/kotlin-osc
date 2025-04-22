@@ -156,11 +156,13 @@ class OscAtomics {
     private class OscTrue : OscBool(true, 'T')
     private class OscFalse : OscBool(false, 'F')
     class OscNull : AbstractNoDataOscAtomic<Unit>(Unit, 'N')
+    class OscImpulse : AbstractNoDataOscAtomic<Unit>(Unit, 'I')
 
     companion object {
         val True: OscBool = OscTrue()
         val False: OscBool = OscFalse()
         val Null = OscNull()
+        val Impulse = OscImpulse()
     }
 
 }
