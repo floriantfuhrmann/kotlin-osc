@@ -15,3 +15,6 @@ val String.asOscAtomic: OscAtomics.OscString
 @OptIn(ExperimentalTime::class)
 val Instant.asOscAtomic: OscAtomics.OscTimeTag
     get() = OscAtomics.OscTimeTag.at(this)
+
+val ByteArray.asOscAtomic: OscAtomics.OscBlob
+    get() = OscAtomics.OscBlob(this)

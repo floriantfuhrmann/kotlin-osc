@@ -20,15 +20,19 @@ class OscAtomics {
     }
 
     class Int32(value: Int) : AbstractOscAtomic<Int>(value, 'i') {
-        override val size = 4
+        override val size = SIZE
         override fun write(outputStream: OutputStream) {
             outputStream.write(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(value).array())
+        }
+
+        companion object {
+            const val SIZE = 4
         }
     }
 
     @OptIn(ExperimentalTime::class)
     sealed class OscTimeTag(value: Instant?): AbstractOscAtomic<Instant?>(value, 't') {
-        override val size = 8
+        override val size = SIZE
 
         class Immediate : OscTimeTag(null) {
             override fun write(outputStream: OutputStream) {
@@ -58,15 +62,20 @@ class OscAtomics {
         }
 
         companion object {
+            const val SIZE = 8
             fun immediately(): OscTimeTag = Immediate()
             fun at(instant: Instant): OscTimeTag = Specified(instant)
         }
     }
 
     class Float32(value: Float) : AbstractOscAtomic<Float>(value, 'f') {
-        override val size = 4
+        override val size = SIZE
         override fun write(outputStream: OutputStream) {
             outputStream.write(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putFloat(value).array())
+        }
+
+        companion object {
+            const val SIZE = 4
         }
     }
 
@@ -76,16 +85,30 @@ class OscAtomics {
          * null terminator plus the number of padding bytes needed to make the size
          * a multiple of 4.
          *
-         * The number of padding bytes is given by 4 - (size % 4) & 3 where size is the
-         * length of the string plus one for the null terminator.
+         * The number of padding bytes including the null terminator is given by
+         * 4 - (size % 4) where size is the length of the string without the null
+         * terminator.
          */
-        override val size = (value.length + 1).let { it + ((4 - it % 4) and 0b11) }
+        override val size = value.length.let { it + (4 - it % 4) }
         override fun write(outputStream: OutputStream) {
             // write string
             outputStream.write(value.toByteArray(Charsets.US_ASCII))
             // write null terminator and padding bytes
-            val paddingBytes = (4 - (value.length + 1) % 4) and 0b11
-            outputStream.write(ByteArray(1 + paddingBytes))
+            val paddingBytes = (4 - value.length % 4)
+            outputStream.write(ByteArray(paddingBytes))
+        }
+    }
+
+    class OscBlob(value: ByteArray) : AbstractOscAtomic<ByteArray>(value, 'b') {
+        override val size = Int32.SIZE + value.size.let { it + ((4 - it % 4) and 0b11) }
+        override fun write(outputStream: OutputStream) {
+            // write the size count preamble
+            value.size.asOscAtomic.write(outputStream)
+            // write the blob
+            outputStream.write(value)
+            // write padding bytes
+            val paddingBytes = (4 - value.size % 4) and 0b11
+            outputStream.write(ByteArray(paddingBytes))
         }
     }
 
