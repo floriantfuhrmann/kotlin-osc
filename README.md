@@ -114,8 +114,54 @@ val myOscTimeTag: OscAtomics.OscTimeTag = OscAtomics.OscTimeTag.Immediate()
 val myOscTimeTag: OscAtomics.OscTimeTag = OscAtomics.OscTimeTag.immediately()
 ```
 
-## Osc Message
-TODO
+## OSC Message
+This is the Structure of an `OscMessage`:
+```kotlin
+class OscMessage(
+    val addressPattern: String, // the address pattern of this message
+    val arguments: List<OscAtomics.AbstractOscAtomic<*>> // zero or more arguments
+) : OscObject
+```
+There currently is no explicit address pattern type, as an address pattern is essentially just a String starting with a
+`/` character. Refer to the OSC Specification for details.
+
+### Creating an OscMessage Object Manually (Not Recommended)
+You can manually put together an `OscMessage` like this:
+```kotlin
+val message = OscMessage("/foo/bar", listOf(0.2f.asOscAtomic, 42.asOscAtomic))
+// or
+val message = OscMessage("/foo/bar", 0.2f.asOscAtomic, 42.asOscAtomic)
+```
+However, it is strongly recommended to use `buildOscMessage {}` instead.
+
+### Creating an OscMessage Object Using `buildOscMessage {}` (Recommended)
+The same message can be created using the builder pattern:
+```kotlin
+val message = buildOscMessage {
+    addressPattern("/foo/bar") // address pattern
+    arg(0.2f) // 1st argument
+    arg(42)  // 2nd argument
+}
+// or simply:
+val message = buildOscMessage("/test/foo") { arg(0.2f); arg(42) }
+```
+#### Supported Argument Types
+The following types can be passed to `arg(...)`:
+```kotlin
+val myAbstractAtomic: OscAtomics.AbstractOscAtomic<*> = getSomeOscAtomic()
+val message = buildOscMessage("/foo/bar") {
+    arg(myAbstractAtomic)                           // AbstractOscAtomic
+    arg(42)                                         // Int (-> int32)
+    arg(42.0f)                                      // Float (-> float32)
+    arg("hello")                                    // String (-> OSC-string)
+    arg(Instant.fromEpochMilliseconds(123456789L))  // Instant (-> OSC-timetag)
+    arg(OscAtomics.OscTimeTag.immediately())        // Immediate time tag
+    arg(byteArrayOf(0x00, 0x01, 0x02))              // ByteArray (-> OSC-blob)
+    arg(true)                                       // Boolean (-> True / False)
+    arg(null)                                       // null (same as OscAtomics.Null)
+    arg(OscAtomics.Impulse)                         // Impulse
+}
+```
 
 ## Osc Bundle
 TODO
