@@ -78,6 +78,7 @@ class OscMessage(
         fun arg(argument: Instant) = arguments.add(argument.asOscAtomic)
         fun arg(argument: ByteArray) = arguments.add(argument.asOscAtomic)
         fun arg(argument: Boolean) = arguments.add(argument.asOscAtomic)
+        fun arg(argument: Nothing?) = arguments.add(OscAtomics.Null)
 
         /** Builds an OscMessage from the current state of this builder. */
         fun toOscMessage() = addressPattern.let { addressPattern ->
