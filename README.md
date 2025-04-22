@@ -36,13 +36,16 @@ This library implements the [OSC 1.0 Specification](https://opensoundcontrol.sta
 // Create an osc client
 val client = OscClient(Socket("127.0.0.1", 5000))
 
-// send osc message "/foo/bar 0.42"
+// Send OSC Message "/foo/bar 0.42"
 buildOscMessage {
     addressPattern("/foo/bar")
     arg(0.42f)
 }.toOscPacket().sendTo(client)
 
-// alternatively write the osc packet directly into a OutputStream using OscPacket#write()
+// Alternatively, write the OSC Packet directly into a OutputStream using OscPacket#write()
+
+// Close the socket when done
+client.socket.close()
 ```
 
 ## OSC Atomics
@@ -239,7 +242,7 @@ packet.write(
 ```
 The `oscVersion` parameter determines the framing mechanism:
 * `OscVersion.Specification1_0`: Uses size-count-preamble
-* `OscVersion.Specification1_1`: double-ended SLIP framing (default)
+* `OscVersion.Specification1_1`: Uses double-ended SLIP framing (default)
 
 ## OSC Client
 The `OscClient` provides a convenient way to send OSC packets over TCP:
